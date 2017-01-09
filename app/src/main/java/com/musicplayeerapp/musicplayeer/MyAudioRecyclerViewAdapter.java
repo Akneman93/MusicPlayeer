@@ -20,7 +20,7 @@ public class MyAudioRecyclerViewAdapter extends RecyclerView.Adapter<MyAudioRecy
 
 
     public MyAudioRecyclerViewAdapter(List<MediaBrowserCompat.MediaItem> audiolist, OnListFragmentInteractionListener listener) {
-        //mValues = items;
+
         mListener = listener;
         mAudioList = audiolist;
     }
@@ -61,28 +61,28 @@ public class MyAudioRecyclerViewAdapter extends RecyclerView.Adapter<MyAudioRecy
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
-        public final TextView mArtistView;
-        public final TextView mCompositionView;
+        public final TextView mDescription;
 
         public MediaBrowserCompat.MediaItem mInfo;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            mArtistView = (TextView) view.findViewById(R.id.artist);
-            mCompositionView = (TextView) view.findViewById(R.id.composition);
+            mDescription = (TextView) view.findViewById(R.id.itemdescription);
+
         }
 
         public void setAudioInfo(MediaBrowserCompat.MediaItem audioinfo)
         {
             mInfo = audioinfo;
-            mArtistView.setText(mInfo.getDescription().getTitle());
-            mCompositionView.setText(mInfo.getDescription().getSubtitle());
+            String descr = mInfo.getDescription().getTitle().toString() + " ";
+            descr += mInfo.getDescription().getSubtitle();
+            mDescription.setText(descr);
         }
 
         @Override
         public String toString() {
-            return super.toString() + " '" + mArtistView.getText() + "'"+ mCompositionView.getText();
+            return super.toString() + " '" + mDescription.getText();
         }
     }
 }

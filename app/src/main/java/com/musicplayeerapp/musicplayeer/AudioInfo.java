@@ -19,6 +19,7 @@ public class AudioInfo {
         Data = audioinfo.Data;
     }
 
+
     public AudioInfo setAlbum(String album) {Album = album; return this;}
     public AudioInfo setArtist(String artist) {Artist = artist; return this;}
     public AudioInfo setComposition(String compostion) {Compostion = compostion; return this;}

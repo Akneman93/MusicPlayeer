@@ -2,9 +2,11 @@ package com.musicplayeerapp.musicplayeer;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.media.browse.MediaBrowser;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
@@ -18,6 +20,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class AudioPlayFragment extends Fragment {
@@ -27,19 +31,24 @@ public class AudioPlayFragment extends Fragment {
     MediaBrowserCompat mMediaBrowser;
     MediaControllerCompat mMediaController;
     View mView;
+    MediaBrowserCompat.MediaItem mItem;
+    OnFragmentInteractionListener mListener;
+    List<MediaBrowserCompat.MediaItem> mItems;
 
-   // private OnFragmentInteractionListener mListener;
+
 
     public AudioPlayFragment() {
-        // Required empty public constructor
+
     }
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+
         mView = inflater.inflate(R.layout.audio_play, container, false);
+
+
 
         mMediaBrowser = new MediaBrowserCompat(getActivity(),
                 new ComponentName(getActivity(), PlayMusicService.class),
@@ -53,15 +62,23 @@ public class AudioPlayFragment extends Fragment {
 
 
 
+
+
+
+
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        /*if (context instanceof OnFragmentInteractionListener) {
+        if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
         } else {
+
+            Log.e(TAG," must implement OnFragmentInteractionListener");
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
-        }*/
+
+        }
     }
 
     @Override
@@ -87,16 +104,30 @@ public class AudioPlayFragment extends Fragment {
 
     public interface OnFragmentInteractionListener {
 
-        void onFragmentInteraction(Uri uri);
+       public void onListLoaded(List<MediaBrowserCompat.MediaItem> newItems);
     }
 
-    public void setAudio(MediaBrowserCompat.MediaItem audioInfo)
+    public void setAudio(MediaBrowserCompat.MediaItem item)
     {
-        TextView artist =  (TextView)mView.findViewById(R.id.Textview_artist);
-        artist.setText(audioInfo.getDescription().getTitle());
-        TextView composition =  (TextView)mView.findViewById(R.id.Textview_composition);
-        composition.setText(audioInfo.getDescription().getSubtitle());
+        TextView artist =  (TextView)mView.findViewById(R.id.Textview_description);
+        artist.setText(item.getDescription().getTitle() + " " + item.getDescription().getSubtitle());
+        mItem = item;
+
+        if (mMediaController != null)
+            mMediaController.getTransportControls().playFromUri(mItem.getDescription().getMediaUri(),null);
+
+
+
     }
+
+
+    public void setAlbum(MediaBrowserCompat.MediaItem item)
+    {
+        mMediaBrowser.subscribe(item.getMediaId(),subscriptionCallback);
+
+    }
+
+
 
     private final MediaBrowserCompat.ConnectionCallback mConnectionCallbacks =  new MediaBrowserCompat.ConnectionCallback() {
         @Override
@@ -117,6 +148,8 @@ public class AudioPlayFragment extends Fragment {
 
             mMediaController.registerCallback(controllerCallback);
 
+            mMediaBrowser.subscribe(MediaItemLoader.ALBUMS_REQEST, subscriptionCallback);
+
 
             Log.e(TAG,"Connection succeded");
 
@@ -135,13 +168,17 @@ public class AudioPlayFragment extends Fragment {
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-                Uri uri = Uri.parse("http://srv58.listentoyoutube.com/download/4piUbWlgm66npa9tnt+UbHFjoGRrY3Fu4q/Mq62V1oajjKit2tjFnQ==/Lou%20Reed%20-%20Satellite%20of%20Love.mp3");
+                //Uri uri = Uri.parse("http://srv58.listentoyoutube.com/download/4piUbWlgm66npa9tnt+UbHFjoGRrY3Fu4q/Mq62V1oajjKit2tjFnQ==/Lou%20Reed%20-%20Satellite%20of%20Love.mp3");
+
+                Log.e(TAG,"Button pressed");
+
+
 
                 int state = mMediaController.getPlaybackState().getState();
                 if (state == PlaybackStateCompat.STATE_PLAYING) {
                     mMediaController.getTransportControls().pause();
                     Log.e(TAG,"pause call");
-                    button.setText("Play");
+
                 }
                 else
                    if (state == PlaybackStateCompat.STATE_PAUSED)
@@ -149,22 +186,18 @@ public class AudioPlayFragment extends Fragment {
                    {
                        mMediaController.getTransportControls().play();
                        Log.e(TAG,"play(resume) call");
-                       button.setText("Pause");
+
                    }
                 else
                    {
-                       mMediaController.getTransportControls().playFromUri(uri,null);
+
+                       if (mItem != null)
+                           mMediaController.getTransportControls().playFromUri(mItem.getDescription().getMediaUri(),null);
                        Log.e(TAG,"play from uri call");
-                       button.setText("Pause");
+
                    }
-
-
-
-                Log.e(TAG,"Button pressed");
-
             }
         });
-
     }
 
 
@@ -172,18 +205,67 @@ public class AudioPlayFragment extends Fragment {
             new MediaControllerCompat.Callback() {
                 @Override
                 public void onMetadataChanged(MediaMetadataCompat metadata) {
-
+                    Log.e(TAG,"playback state changed (onMetaDataChanged)");
                 }
 
                 @Override
                 public void onPlaybackStateChanged(PlaybackStateCompat state)
                 {
+                    final Button button = (Button)mView.findViewById(R.id.start_button);
+                    if (state.getState() == PlaybackStateCompat.STATE_PAUSED)
+                        button.setText("Play");
+                    else
+                        if (state.getState() == PlaybackStateCompat.STATE_PLAYING)
+                            button.setText("Pause");
+                    else
+                        if (state.getState() == PlaybackStateCompat.STATE_SKIPPING_TO_NEXT)
+                        {
+                            Log.i(TAG, "skip to next (onPlaybackStateChanged)");
+                            int id = Integer.parseInt(mItem.getMediaId());
+                            Log.i(TAG, "id = " + mItem.getMediaId());
+                            id++;
+                            MediaBrowserCompat.MediaItem newItem = mItems.get(id % mItems.size());
+                            setAudio(newItem);
 
+                        }
+                    else
+                        button.setText("Play");
 
                 }
-
-
             };
+
+    MediaBrowserCompat.SubscriptionCallback subscriptionCallback = new MediaBrowserCompat.SubscriptionCallback()
+    {
+        @Override
+        public void onChildrenLoaded(@NonNull String parentId, List<MediaBrowserCompat.MediaItem> children) {
+            super.onChildrenLoaded(parentId, children);
+
+            Log.e(TAG,"onChildrenLoaded (subscriptioncallback) called");
+
+            mItems = new ArrayList<>(children);
+            if (mListener != null)
+                mListener.onListLoaded(mItems);
+            else
+                Log.e(TAG,"onChildrenLoaded (subscriptioncallback) listener == null");
+
+
+
+        }
+
+        @Override
+        public void onError(@NonNull String parentId) {
+            super.onError(parentId);
+            Log.e(TAG,"subscriptionCallback error");
+        }
+
+
+    };
+
+
+
+
+
+
 
 
 

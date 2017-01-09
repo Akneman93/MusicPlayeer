@@ -1,9 +1,10 @@
 <resources>
-    <string name="app_name">VKPlayeer</string>
+    <string name="app_name">MusicPlayeer</string>
     <string name="albums_btn">Альбомы</string>
     <string name="artists_btn">Исполнители</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <integer name="com_vk_sdk_AppId">5813015</integer>
+
+
 </resources>

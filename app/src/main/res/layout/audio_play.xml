@@ -5,14 +5,6 @@
     tools:context="com.musicplayeerapp.musicplayeer.AudioPlayFragment"
     android:orientation="vertical">
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-
-    android:orientation="horizontal">
-
-
 
 
 
@@ -20,22 +12,33 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/hello_blank_fragment"
-        android:id="@+id/Textview_artist" />
+        android:layout_marginTop="20dp"
+        android:id="@+id/Textview_description" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/hello_blank_fragment"
-        android:id="@+id/Textview_composition" />
-
-
-</LinearLayout>
 
     <Button
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:text="start"
-        android:id="@+id/start_button"/>
+        android:layout_marginTop="20dp"
+        android:id="@+id/start_button"
+        android:orientation="horizontal"/>
+
+    <SeekBar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:id="@+id/seekBar" />
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,8 +1,6 @@
 package com.musicplayeerapp.musicplayeer;
 
-/**
- * Created by domeniko on 05.01.17.
- */
+
 
 import android.content.Context;
 import android.media.AudioManager;
@@ -49,6 +47,8 @@ public class AudioPlayer {
     }
 
 
+
+
     public boolean isAlive()
     {
         return mPlayer == null ? false : true;
@@ -62,6 +62,7 @@ public class AudioPlayer {
         mContext = context;
         mCallback = callback;
         //createPlayer();
+
     }
 
     public int getPlayerState()
@@ -73,6 +74,12 @@ public class AudioPlayer {
     {
         return mPlayer != null ?
                 mPlayer.getCurrentPosition() : lastPos;
+    }
+
+    public int getDuration()
+    {
+        return mPlayer != null ?
+                mPlayer.getCurrentPosition() : 0;
     }
 
 
@@ -121,6 +128,14 @@ public class AudioPlayer {
         }
     }
 
+    public void seekTo(int position)
+    {
+        if (mPlayer != null && (mState == PlaybackState.STATE_PLAYING || mState == PlaybackState.STATE_PAUSED))
+        {
+            mPlayer.seekTo(position);
+        }
+    }
+
 
 
 
@@ -154,15 +169,8 @@ public class AudioPlayer {
         mPlayer = new MediaPlayer();
         mPlayer.setOnPreparedListener(prepListener);
         mPlayer.setOnCompletionListener(completListener);
-        //mPlayer.setOnErrorListener();
 
         mPlayer.setWakeMode(mContext.getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
-
-
-        mWifiLock = ((WifiManager) mContext.getSystemService(Context.WIFI_SERVICE))
-                .createWifiLock(WifiManager.WIFI_MODE_FULL, "mylock");
-
-        mWifiLock.acquire();
 
         mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
@@ -175,8 +183,8 @@ public class AudioPlayer {
         if (mPlayer.isPlaying()) mPlayer.stop();
         mPlayer.release();
         mPlayer = null;
-        mWifiLock.release();
         mState = PlaybackStateCompat.STATE_NONE;
+        stateChanged(mState);
     }
 
 

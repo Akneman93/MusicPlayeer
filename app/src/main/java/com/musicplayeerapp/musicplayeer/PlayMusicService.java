@@ -26,9 +26,10 @@ import java.util.List;
     public static final String TAG = "PlayMusicService";
     public static final String MEDIA_ID_ROOT = "Media_root";
 
+    MediaItemLoader mItemLoader;
+
         @Override
         public void onCompletion() {
-            updateSessionState();
             mPlayer.releasePlayer();
         }
 
@@ -45,6 +46,7 @@ import java.util.List;
         Log.e(TAG,"Service oncreate started");
 
         mPlayer = new AudioPlayer(this, this);
+        mItemLoader = new MediaItemLoader(this);
 
 
         mMediaSession = new MediaSessionCompat(this, "PlayMusicService");
@@ -113,7 +115,7 @@ import java.util.List;
     public void onLoadChildren(final String parentMediaId,
                                final Result<List<MediaBrowserCompat.MediaItem>> result) {
 
-        result.sendResult(null);
+        result.sendResult(mItemLoader.getItems(parentMediaId));
         return;
     }
 
@@ -148,6 +150,12 @@ import java.util.List;
         }
 
         @Override
+        public void onSeekTo(long pos) {
+            super.onSeekTo(pos);
+            mPlayer.seekTo((int)pos);
+        }
+
+        @Override
         public void onPlayFromMediaId(String mediaId, Bundle extras) {
             super.onPlayFromMediaId(mediaId, extras);
         }
@@ -173,6 +181,7 @@ import java.util.List;
 
 
             mMediaSession.setPlaybackState(mStateBuilder.build());
+
 
         }
 

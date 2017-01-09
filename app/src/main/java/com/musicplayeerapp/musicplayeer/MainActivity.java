@@ -11,14 +11,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements AudioListFragment.OnListFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity
+        implements AudioListFragment.OnListFragmentInteractionListener,
+        AudioPlayFragment.OnFragmentInteractionListener
+{
 
     private static final String TAG = "MainActivity";
 
-    List<MediaBrowserCompat.MediaItem> audioList;
 
-
-
+    @Override
+    public void onListLoaded(List<MediaBrowserCompat.MediaItem> newItems) {
+        Log.e(TAG,"onListLoaded called");
+        AudioListFragment frag = (AudioListFragment)getSupportFragmentManager().findFragmentById(R.id.audiolist);
+        frag.setList(newItems);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,12 +34,8 @@ public class MainActivity extends AppCompatActivity implements AudioListFragment
         setContentView(R.layout.activity_main);
 
 
+        //();
 
-
-
-        loadDummyAudioList();
-        AudioListFragment frag = (AudioListFragment)getSupportFragmentManager().findFragmentById(R.id.audiolist);
-        frag.setList(audioList);
         Log.e(TAG,"mainactivity oncreate finished");
     }
 
@@ -46,20 +48,28 @@ public class MainActivity extends AppCompatActivity implements AudioListFragment
 
     protected void loadDummyAudioList()
     {
-        audioList = new ArrayList<>();
+       // audioList = new ArrayList<>();
         //for (int i = 0; i < 100; i++)
         //    audioList.add(AudioInfo.generateDummy(i));
-
-
-
     }
 
 
 
     public void onClick(MediaBrowserCompat.MediaItem audioInfo)
     {
+        if (audioInfo == null) return;
         AudioPlayFragment frag = (AudioPlayFragment)getSupportFragmentManager().findFragmentById(R.id.audioplay);
-        frag.setAudio(audioInfo);
+        if (audioInfo.isPlayable())
+            frag.setAudio(audioInfo);
+        else
+            if (audioInfo.isBrowsable())
+            {
+                frag.setAlbum(audioInfo);
+            }
+        else
+                Log.e(TAG,"error (onClick)");
+
+
     }
 
 

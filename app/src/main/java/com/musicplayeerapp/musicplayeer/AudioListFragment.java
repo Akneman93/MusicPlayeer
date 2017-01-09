@@ -27,10 +27,7 @@ public class AudioListFragment extends Fragment {
     private MyAudioRecyclerViewAdapter mRecyclerAdapter;
     private RecyclerView mRecyclerView;
 
-    /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
-     */
+
     public AudioListFragment() {
     }
 
@@ -47,8 +44,6 @@ public class AudioListFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        //mRecyclerAdapter = new MyAudioRecyclerViewAdapter(mAudioList, mListener);
     }
 
 
@@ -95,7 +90,6 @@ public class AudioListFragment extends Fragment {
     public void setList(List<MediaBrowserCompat.MediaItem> audiolist)
     {
         mRecyclerView.setAdapter(new MyAudioRecyclerViewAdapter(audiolist, mListener));
-
     }
 
 
