@@ -7,22 +7,23 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.session.PlaybackState;
 import android.net.wifi.WifiManager;
+import android.os.Handler;
 import android.os.PowerManager;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.util.Log;
 
 import java.io.IOException;
 
 
 public class AudioPlayer {
 
-
+    private static final String TAG = "AudioPlayer";
 
     interface Callback{
 
         void onCompletion();
-        void onStateChanged(int state);
+        void onStateChanged();
     }
-
 
 
     Context mContext;
@@ -35,23 +36,19 @@ public class AudioPlayer {
 
     private int mState = PlaybackState.STATE_NONE;
 
-    private WifiManager.WifiLock mWifiLock;
 
-
+    /** called when state has changed*/
     private void stateChanged(int state)
     {
         mState = state;
         if (mCallback != null)
-            mCallback.onStateChanged(mState);
-
+            mCallback.onStateChanged();
     }
 
-
-
-
-    public boolean isAlive()
+    /** returns current player state*/
+    public int getPlayerState()
     {
-        return mPlayer == null ? false : true;
+        return mState;
     }
 
 
@@ -61,30 +58,34 @@ public class AudioPlayer {
     {
         mContext = context;
         mCallback = callback;
-        //createPlayer();
-
     }
 
-    public int getPlayerState()
-    {
-        return mState;
-    }
 
+    /** returns last player position*/
     public int getPosition()
     {
         return mPlayer != null ?
                 mPlayer.getCurrentPosition() : lastPos;
     }
 
+
+
+    /** returns duration in ms*/
     public int getDuration()
     {
-        return mPlayer != null ?
-                mPlayer.getCurrentPosition() : 0;
+        if (mPlayer != null && (mState == PlaybackStateCompat.STATE_PLAYING || mState == PlaybackStateCompat.STATE_PAUSED))
+            return mPlayer.getDuration();
+        else {
+            Log.i(TAG, "zero duration");
+            return 0;
+        }
     }
 
-
+    /** sets audioSource and starts after prepareAsync */
     public void play(String audioSource)
     {
+        mState = PlaybackState.STATE_NONE;
+
         if (mPlayer == null) createPlayer();
 
         if (mPlayer.isPlaying()) mPlayer.stop();
@@ -96,7 +97,9 @@ public class AudioPlayer {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        stateChanged(PlaybackStateCompat.STATE_BUFFERING);
         mPlayer.prepareAsync();
+
     }
 
 
@@ -130,10 +133,15 @@ public class AudioPlayer {
 
     public void seekTo(int position)
     {
-        if (mPlayer != null && (mState == PlaybackState.STATE_PLAYING || mState == PlaybackState.STATE_PAUSED))
-        {
+        if (mPlayer == null) return;
+
+        if (mState == PlaybackState.STATE_PLAYING || mState == PlaybackState.STATE_PAUSED
+                || mState ==PlaybackStateCompat.STATE_BUFFERING ) {
             mPlayer.seekTo(position);
+            lastPos = position;
         }
+
+
     }
 
 
@@ -169,12 +177,8 @@ public class AudioPlayer {
         mPlayer = new MediaPlayer();
         mPlayer.setOnPreparedListener(prepListener);
         mPlayer.setOnCompletionListener(completListener);
-
         mPlayer.setWakeMode(mContext.getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
-
         mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-
-
     }
 
     public void releasePlayer()
@@ -186,6 +190,10 @@ public class AudioPlayer {
         mState = PlaybackStateCompat.STATE_NONE;
         stateChanged(mState);
     }
+
+
+
+
 
 
 

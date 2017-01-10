@@ -22,9 +22,6 @@ public class MediaItemLoader {
     public static final String SONG_DESC = "SONG_";
     public static final String ALBUMS_REQEST = "ALBUMS_REQUEST";
 
-
-
-
     Context mContext;
     ContentResolver mContentResolver;
 
@@ -117,9 +114,6 @@ public class MediaItemLoader {
         List<MediaBrowserCompat.MediaItem> mItems = new ArrayList<>();
 
         int i = 0;
-
-
-        Log.e("Loader",Integer.toString(cursor.getCount()));
 
         if (cursor != null && cursor.getCount() > 0) {
             while (cursor.moveToNext()) {

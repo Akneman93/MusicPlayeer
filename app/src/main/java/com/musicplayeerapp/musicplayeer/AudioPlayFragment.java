@@ -5,6 +5,7 @@ import android.content.Context;
 import android.media.browse.MediaBrowser;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -18,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -31,9 +33,22 @@ public class AudioPlayFragment extends Fragment {
     MediaBrowserCompat mMediaBrowser;
     MediaControllerCompat mMediaController;
     View mView;
+    SeekBar seekBar;
     MediaBrowserCompat.MediaItem mItem;
     OnFragmentInteractionListener mListener;
     List<MediaBrowserCompat.MediaItem> mItems;
+
+
+    public interface OnFragmentInteractionListener {
+
+
+        /** Activity must implement this to get the list of mediaitems returned from MediaBrowser
+         *
+         * @param newItems new list filled with mediaitems
+         */
+
+        public void onListLoaded(List<MediaBrowserCompat.MediaItem> newItems);
+    }
 
 
 
@@ -48,6 +63,9 @@ public class AudioPlayFragment extends Fragment {
 
         mView = inflater.inflate(R.layout.audio_play, container, false);
 
+        seekBar = (SeekBar)mView.findViewById(R.id.seekBar);
+
+        seekBar.setOnSeekBarChangeListener(seekBarChangeListener);
 
 
         mMediaBrowser = new MediaBrowserCompat(getActivity(),
@@ -65,6 +83,37 @@ public class AudioPlayFragment extends Fragment {
 
 
 
+    SeekBar.OnSeekBarChangeListener seekBarChangeListener  = new SeekBar.OnSeekBarChangeListener() {
+
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+
+            if ( mMediaController!= null )
+            {
+                mMediaController.getTransportControls().seekTo(seekBar.getProgress());
+                mMediaController.getTransportControls().pause();
+
+            }
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+            stopTracking();
+            Log.i(TAG,"start tracking touch");
+
+        }
+
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+            if (fromUser)
+            {
+                seekBar.setProgress(progress);
+            }
+        }
+    };
+
 
 
     @Override
@@ -73,11 +122,7 @@ public class AudioPlayFragment extends Fragment {
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
         } else {
-
-            Log.e(TAG," must implement OnFragmentInteractionListener");
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-
+            Log.i(TAG," must implement OnFragmentInteractionListener");
         }
     }
 
@@ -89,7 +134,6 @@ public class AudioPlayFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
-        //mListener = null;
         mMediaBrowser.disconnect();
         mMediaController.unregisterCallback(controllerCallback);
     }
@@ -97,15 +141,12 @@ public class AudioPlayFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.e(TAG,"AudioPlayFragment destroy");
+        Log.i(TAG,"destroy");
     }
 
 
 
-    public interface OnFragmentInteractionListener {
 
-       public void onListLoaded(List<MediaBrowserCompat.MediaItem> newItems);
-    }
 
     public void setAudio(MediaBrowserCompat.MediaItem item)
     {
@@ -113,10 +154,10 @@ public class AudioPlayFragment extends Fragment {
         artist.setText(item.getDescription().getTitle() + " " + item.getDescription().getSubtitle());
         mItem = item;
 
-        if (mMediaController != null)
-            mMediaController.getTransportControls().playFromUri(mItem.getDescription().getMediaUri(),null);
-
-
+        if (mMediaController != null) {
+            mMediaController.getTransportControls().playFromUri(mItem.getDescription().getMediaUri(), null);
+            trackProgress();
+        }
 
     }
 
@@ -124,8 +165,14 @@ public class AudioPlayFragment extends Fragment {
     public void setAlbum(MediaBrowserCompat.MediaItem item)
     {
         mMediaBrowser.subscribe(item.getMediaId(),subscriptionCallback);
-
     }
+
+    public void setSeekBar(int pos, int max)
+    {
+        seekBar.setMax(max);
+        seekBar.setProgress(pos);
+    }
+
 
 
 
@@ -142,7 +189,7 @@ public class AudioPlayFragment extends Fragment {
             }
             catch (RemoteException ex)
             {
-                Log.e(TAG,"Connection failed");
+                Log.i(TAG,"Connection failed");
                 throw new RuntimeException(ex);
             }
 
@@ -151,14 +198,14 @@ public class AudioPlayFragment extends Fragment {
             mMediaBrowser.subscribe(MediaItemLoader.ALBUMS_REQEST, subscriptionCallback);
 
 
-            Log.e(TAG,"Connection succeded");
+            Log.i(TAG,"Connection succeded");
 
         }
 
         @Override
         public void onConnectionFailed() {
             super.onConnectionFailed();
-            Log.e(TAG,"Connection failed (onConnectionFailed)");
+            Log.i(TAG,"Connection failed (onConnectionFailed)");
         }
     };
 
@@ -168,34 +215,29 @@ public class AudioPlayFragment extends Fragment {
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-                //Uri uri = Uri.parse("http://srv58.listentoyoutube.com/download/4piUbWlgm66npa9tnt+UbHFjoGRrY3Fu4q/Mq62V1oajjKit2tjFnQ==/Lou%20Reed%20-%20Satellite%20of%20Love.mp3");
-
-                Log.e(TAG,"Button pressed");
-
-
+                Log.i(TAG,"Button pressed");
 
                 int state = mMediaController.getPlaybackState().getState();
-                if (state == PlaybackStateCompat.STATE_PLAYING) {
-                    mMediaController.getTransportControls().pause();
-                    Log.e(TAG,"pause call");
 
+                switch (state) {
+
+                    case PlaybackStateCompat.STATE_PLAYING:
+                        mMediaController.getTransportControls().pause();
+                        Log.i(TAG, "pause call");
+                        break;
+                    case PlaybackStateCompat.STATE_PAUSED:
+                        mMediaController.getTransportControls().play();
+                        Log.i(TAG, "play(resume) call");
+                        break;
+                    default:
+                        if (mItem != null) {
+                            mMediaController.getTransportControls().playFromUri(mItem.getDescription().getMediaUri(), null);
+                            trackProgress();
+                        }
+                        Log.i(TAG, "play from uri call");
                 }
-                else
-                   if (state == PlaybackStateCompat.STATE_PAUSED)
-                       //where is resume
-                   {
-                       mMediaController.getTransportControls().play();
-                       Log.e(TAG,"play(resume) call");
 
-                   }
-                else
-                   {
 
-                       if (mItem != null)
-                           mMediaController.getTransportControls().playFromUri(mItem.getDescription().getMediaUri(),null);
-                       Log.e(TAG,"play from uri call");
-
-                   }
             }
         });
     }
@@ -205,31 +247,42 @@ public class AudioPlayFragment extends Fragment {
             new MediaControllerCompat.Callback() {
                 @Override
                 public void onMetadataChanged(MediaMetadataCompat metadata) {
-                    Log.e(TAG,"playback state changed (onMetaDataChanged)");
+                    Log.i(TAG,"playback state changed (onMetaDataChanged)");
                 }
 
                 @Override
-                public void onPlaybackStateChanged(PlaybackStateCompat state)
+                public void onPlaybackStateChanged(PlaybackStateCompat playbackstate)
                 {
                     final Button button = (Button)mView.findViewById(R.id.start_button);
-                    if (state.getState() == PlaybackStateCompat.STATE_PAUSED)
-                        button.setText("Play");
-                    else
-                        if (state.getState() == PlaybackStateCompat.STATE_PLAYING)
+
+                    int state = playbackstate.getState();
+
+
+                    switch (state) {
+
+                        case PlaybackStateCompat.STATE_PAUSED:
+                            button.setText("Play");
+                            break;
+
+                        case PlaybackStateCompat.STATE_PLAYING:
                             button.setText("Pause");
-                    else
-                        if (state.getState() == PlaybackStateCompat.STATE_SKIPPING_TO_NEXT)
-                        {
+                            break;
+
+                        case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT:
+
                             Log.i(TAG, "skip to next (onPlaybackStateChanged)");
+
+                            // MediaId is expected to be the index of item in list
                             int id = Integer.parseInt(mItem.getMediaId());
                             Log.i(TAG, "id = " + mItem.getMediaId());
-                            id++;
+                            id++;//index of next mediaItem
                             MediaBrowserCompat.MediaItem newItem = mItems.get(id % mItems.size());
                             setAudio(newItem);
+                            break;
 
-                        }
-                    else
-                        button.setText("Play");
+                        default:
+                            button.setText("Play");
+                    }
 
                 }
             };
@@ -240,33 +293,72 @@ public class AudioPlayFragment extends Fragment {
         public void onChildrenLoaded(@NonNull String parentId, List<MediaBrowserCompat.MediaItem> children) {
             super.onChildrenLoaded(parentId, children);
 
-            Log.e(TAG,"onChildrenLoaded (subscriptioncallback) called");
+            Log.i(TAG,"onChildrenLoaded (subscriptioncallback) called");
 
             mItems = new ArrayList<>(children);
             if (mListener != null)
                 mListener.onListLoaded(mItems);
             else
-                Log.e(TAG,"onChildrenLoaded (subscriptioncallback) listener == null");
-
-
-
+                Log.i(TAG,"onChildrenLoaded listener == null");
         }
 
         @Override
         public void onError(@NonNull String parentId) {
             super.onError(parentId);
-            Log.e(TAG,"subscriptionCallback error");
+            Log.i(TAG,"subscriptionCallback error");
         }
 
 
     };
 
 
+    private Handler mHandler = new Handler();
+
+    /** task for updating seekBar progress */
+    private Runnable informAboutState = new Runnable() {
+
+        @Override
+        public void run() {
+            if (mMediaController != null)
+            {
+                mMediaController.getTransportControls().sendCustomAction("update",null);
+                PlaybackStateCompat state = mMediaController.getPlaybackState();
+                if (state.getState() == PlaybackStateCompat.STATE_PLAYING
+                        || state.getState() == PlaybackStateCompat.STATE_PAUSED)
+                {
+                    int pos = (int) state.getPosition();
+                    int duration = state.getExtras().getInt("duration");
+
+                    //Log.i(TAG, "Duration " + duration + " Position " + pos);
+
+                    setSeekBar(pos, duration);
+                }
+            }
+            mHandler.postDelayed(this, 10);
+        }
+    };
+
+
+    private boolean isTracked = false;
 
 
 
+    /**starts checking progress of player*/
+    private void trackProgress()
+    {
+        if (isTracked) return;
+        getActivity().runOnUiThread(informAboutState);
+        isTracked = true;
+    }
 
-
+    /**stops checking progress of player*/
+    private void stopTracking()
+    {
+        if (isTracked) {
+            mHandler.removeCallbacks(informAboutState);
+            isTracked = false;
+        }
+    }
 
 
 }

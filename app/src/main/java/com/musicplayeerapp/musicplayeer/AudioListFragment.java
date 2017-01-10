@@ -13,12 +13,7 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A fragment representing a list of Items.
- * <p/>
- * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
- * interface.
- */
+
 public class AudioListFragment extends Fragment {
 
 
@@ -35,9 +30,6 @@ public class AudioListFragment extends Fragment {
     @SuppressWarnings("unused")
     public static AudioListFragment newInstance(int columnCount) {
         AudioListFragment fragment = new AudioListFragment();
-        //Bundle args = new Bundle();
-        //args.putInt(ARG_COLUMN_COUNT, columnCount);
-        //fragment.setArguments(args);
         return fragment;
     }
 

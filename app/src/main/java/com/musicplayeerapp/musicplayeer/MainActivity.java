@@ -4,11 +4,6 @@ import android.os.Bundle;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-
-
-
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
@@ -21,7 +16,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onListLoaded(List<MediaBrowserCompat.MediaItem> newItems) {
-        Log.e(TAG,"onListLoaded called");
+        Log.i(TAG,"onListLoaded called");
         AudioListFragment frag = (AudioListFragment)getSupportFragmentManager().findFragmentById(R.id.audiolist);
         frag.setList(newItems);
     }
@@ -29,32 +24,16 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        Log.e(TAG,"mainactivity oncreate");
         setContentView(R.layout.activity_main);
 
-
-        //();
-
-        Log.e(TAG,"mainactivity oncreate finished");
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-
-
     }
 
-    protected void loadDummyAudioList()
-    {
-       // audioList = new ArrayList<>();
-        //for (int i = 0; i < 100; i++)
-        //    audioList.add(AudioInfo.generateDummy(i));
-    }
-
-
-
+    @Override
     public void onClick(MediaBrowserCompat.MediaItem audioInfo)
     {
         if (audioInfo == null) return;

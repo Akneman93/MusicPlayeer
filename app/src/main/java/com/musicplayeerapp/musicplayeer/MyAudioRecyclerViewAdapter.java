@@ -14,7 +14,6 @@ import java.util.List;
 
 public class MyAudioRecyclerViewAdapter extends RecyclerView.Adapter<MyAudioRecyclerViewAdapter.ViewHolder> {
 
-    //private final List<DummyItem> mValues;
     private final List<MediaBrowserCompat.MediaItem> mAudioList;
     private final OnListFragmentInteractionListener mListener;
 
