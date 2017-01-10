@@ -91,9 +91,9 @@ public class AudioPlayFragment extends Fragment {
 
             if ( mMediaController!= null )
             {
+                int state = mMediaController.getPlaybackState().getState();
                 mMediaController.getTransportControls().seekTo(seekBar.getProgress());
-                mMediaController.getTransportControls().pause();
-
+                trackProgress();
             }
         }
 
@@ -222,10 +222,12 @@ public class AudioPlayFragment extends Fragment {
                 switch (state) {
 
                     case PlaybackStateCompat.STATE_PLAYING:
+                        stopTracking();
                         mMediaController.getTransportControls().pause();
                         Log.i(TAG, "pause call");
                         break;
                     case PlaybackStateCompat.STATE_PAUSED:
+                        trackProgress();
                         mMediaController.getTransportControls().play();
                         Log.i(TAG, "play(resume) call");
                         break;
@@ -312,6 +314,10 @@ public class AudioPlayFragment extends Fragment {
     };
 
 
+    //if we should update seekBar progress
+    private boolean isTracked = false;
+
+
     private Handler mHandler = new Handler();
 
     /** task for updating seekBar progress */
@@ -323,8 +329,8 @@ public class AudioPlayFragment extends Fragment {
             {
                 mMediaController.getTransportControls().sendCustomAction("update",null);
                 PlaybackStateCompat state = mMediaController.getPlaybackState();
-                if (state.getState() == PlaybackStateCompat.STATE_PLAYING
-                        || state.getState() == PlaybackStateCompat.STATE_PAUSED)
+                if (isTracked && (state.getState() == PlaybackStateCompat.STATE_PLAYING
+                        || state.getState() == PlaybackStateCompat.STATE_PAUSED))
                 {
                     int pos = (int) state.getPosition();
                     int duration = state.getExtras().getInt("duration");
@@ -334,12 +340,10 @@ public class AudioPlayFragment extends Fragment {
                     setSeekBar(pos, duration);
                 }
             }
-            mHandler.postDelayed(this, 10);
+            mHandler.postDelayed(this, 200);
         }
     };
 
-
-    private boolean isTracked = false;
 
 
 
