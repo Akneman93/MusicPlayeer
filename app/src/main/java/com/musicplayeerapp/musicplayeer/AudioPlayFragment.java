@@ -29,30 +29,25 @@ import java.util.List;
 public class AudioPlayFragment extends Fragment {
 
     private static final String TAG = "AudioPlayFragment";
-
-    MediaBrowserCompat mMediaBrowser;
-    MediaControllerCompat mMediaController;
-    View mView;
-    SeekBar seekBar;
-    MediaBrowserCompat.MediaItem mItem;
-    OnFragmentInteractionListener mListener;
-    List<MediaBrowserCompat.MediaItem> mItems;
-
-
-    public interface OnFragmentInteractionListener {
+    private MediaBrowserCompat mMediaBrowser;
+    private MediaControllerCompat mMediaController;
+    private View mView;
+    private SeekBar seekBar;
+    private MediaBrowserCompat.MediaItem mItem = null;
+    private int mItemprogress = 0;
+    public final String INIT_URI_PLAY = "INIT_URI_PLAY";
+    public final String INTERRUPTED_URI_KEY = "INTERRUPTED_URI_KEY";
+    private final String PROGRESS_KEY = "PROGRESS_KEY";
 
 
-        /** Activity must implement this to get the list of mediaitems returned from MediaBrowser
-         *
-         * @param newItems new list filled with mediaitems
-         */
 
-        public void onListLoaded(List<MediaBrowserCompat.MediaItem> newItems);
-    }
+
 
 
 
     public AudioPlayFragment() {
+
+
 
     }
 
@@ -60,6 +55,26 @@ public class AudioPlayFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+
+        Bundle bundle = getArguments();
+
+        if (bundle != null) {
+                mItem = MediaItemLoader.getItemFromBundle(bundle);
+        }
+        else
+        {
+            Log.i(TAG,"null arguments");
+        }
+
+        if (savedInstanceState != null )
+        {
+            mItem = MediaItemLoader.getItemFromBundle(savedInstanceState);
+            mItemprogress = savedInstanceState.getInt(PROGRESS_KEY);
+            Log.i(TAG, "SavedInstance: progress " + " " + mItemprogress);
+        }
+
+
 
         mView = inflater.inflate(R.layout.audio_play, container, false);
 
@@ -75,13 +90,19 @@ public class AudioPlayFragment extends Fragment {
 
         mMediaBrowser.connect();
         buildTransportControls();
+
+
         return mView;
     }
 
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
 
-
-
+        MediaItemLoader.putItemInBundle(outState, mItem);
+        outState.putInt(PROGRESS_KEY, mItemprogress);
+    }
 
     SeekBar.OnSeekBarChangeListener seekBarChangeListener  = new SeekBar.OnSeekBarChangeListener() {
 
@@ -119,11 +140,6 @@ public class AudioPlayFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            Log.i(TAG," must implement OnFragmentInteractionListener");
-        }
     }
 
     @Override
@@ -134,14 +150,17 @@ public class AudioPlayFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
-        mMediaBrowser.disconnect();
-        mMediaController.unregisterCallback(controllerCallback);
+        stopTracking();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         Log.i(TAG,"destroy");
+        mMediaBrowser.disconnect();
+        mMediaController.unregisterCallback(controllerCallback);
+
+
     }
 
 
@@ -161,11 +180,6 @@ public class AudioPlayFragment extends Fragment {
 
     }
 
-
-    public void setAlbum(MediaBrowserCompat.MediaItem item)
-    {
-        mMediaBrowser.subscribe(item.getMediaId(),subscriptionCallback);
-    }
 
     public void setSeekBar(int pos, int max)
     {
@@ -195,7 +209,12 @@ public class AudioPlayFragment extends Fragment {
 
             mMediaController.registerCallback(controllerCallback);
 
-            mMediaBrowser.subscribe(MediaItemLoader.ALBUMS_REQEST, subscriptionCallback);
+
+            if (mItem != null)
+            {
+                setAudio(mItem);
+            }
+
 
 
             Log.i(TAG,"Connection succeded");
@@ -274,12 +293,12 @@ public class AudioPlayFragment extends Fragment {
 
                             Log.i(TAG, "skip to next (onPlaybackStateChanged)");
 
-                            // MediaId is expected to be the index of item in list
+                            /* MediaId is expected to be the index of item in list
                             int id = Integer.parseInt(mItem.getMediaId());
                             Log.i(TAG, "id = " + mItem.getMediaId());
                             id++;//index of next mediaItem
                             MediaBrowserCompat.MediaItem newItem = mItems.get(id % mItems.size());
-                            setAudio(newItem);
+                            setAudio(newItem);*/
                             break;
 
                         default:
@@ -289,29 +308,7 @@ public class AudioPlayFragment extends Fragment {
                 }
             };
 
-    MediaBrowserCompat.SubscriptionCallback subscriptionCallback = new MediaBrowserCompat.SubscriptionCallback()
-    {
-        @Override
-        public void onChildrenLoaded(@NonNull String parentId, List<MediaBrowserCompat.MediaItem> children) {
-            super.onChildrenLoaded(parentId, children);
 
-            Log.i(TAG,"onChildrenLoaded (subscriptioncallback) called");
-
-            mItems = new ArrayList<>(children);
-            if (mListener != null)
-                mListener.onListLoaded(mItems);
-            else
-                Log.i(TAG,"onChildrenLoaded listener == null");
-        }
-
-        @Override
-        public void onError(@NonNull String parentId) {
-            super.onError(parentId);
-            Log.i(TAG,"subscriptionCallback error");
-        }
-
-
-    };
 
 
     //if we should update seekBar progress
@@ -363,6 +360,7 @@ public class AudioPlayFragment extends Fragment {
             isTracked = false;
         }
     }
+
 
 
 }

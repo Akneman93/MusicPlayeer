@@ -67,11 +67,12 @@ import java.util.List;
 
         mMediaSession.setCallback(mCallback);
 
-        Context context = getApplicationContext();
+        /*Context context = getApplicationContext();
         Intent intent = new Intent(context, AudioPlayFragment.class);
-        PendingIntent pi = PendingIntent.getActivity(context, 99 /*request code*/,
+        PendingIntent pi = PendingIntent.getActivity(context, 99 ,
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        mMediaSession.setSessionActivity(pi);
+        mMediaSession.setSessionActivity(pi);*/
+
 
         updateSessionState();
 
@@ -120,6 +121,7 @@ import java.util.List;
             super.onPlayFromUri(uri, extras);
 
             Log.i(TAG,"onPlayFromUri");
+
 
             mPlayer.play(uri.toString());
         }

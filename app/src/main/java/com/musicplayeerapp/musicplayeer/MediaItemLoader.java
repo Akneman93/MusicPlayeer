@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.content.ContentResolverCompat;
 import android.support.v4.media.MediaBrowserCompat;
@@ -18,9 +19,14 @@ import java.util.List;
  */
 
 public class MediaItemLoader {
+    public static final String TAG = "MediaItemLoader";
 
-    public static final String SONG_DESC = "SONG_";
-    public static final String ALBUMS_REQEST = "ALBUMS_REQUEST";
+    public static final String TITLE_KEY = "TITLE_KEY";
+    public static final String SUBTITLE_KEY = "SUBTITLE_KEY";
+    public static final String URI_KEY = "URI_KEY";
+    public static final String MEDIA_ID_KEY = "MEDIA_ID_KEY";
+
+
 
     Context mContext;
     ContentResolver mContentResolver;
@@ -28,83 +34,17 @@ public class MediaItemLoader {
     public MediaItemLoader(Context context)
     {
         mContext = context;
-        mContentResolver = context.getContentResolver();
-    }
-
-    MediaDescriptionCompat.Builder  builder = new  MediaDescriptionCompat.Builder();
+        mContentResolver = context.getContentResolver();    }
 
 
-    // TODO: 09.01.2017  deal with it later;
-    private List<MediaBrowserCompat.MediaItem> getAlbums()
-    {
-        String[] projection = new String[] { MediaStore.Audio.Albums._ID, MediaStore.Audio.Albums.ALBUM};
-        String selection = null;
-        String[] selectionArgs = null;
-        String sortOrder = MediaStore.Audio.Media.ALBUM + " ASC";
-        Cursor cursor = mContentResolver.query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI, projection, selection, selectionArgs, sortOrder);
-
-        List<MediaBrowserCompat.MediaItem> mItems = new ArrayList<>();
-
-
-
-        if (cursor != null && cursor.getCount() > 0) {
-            Log.e("Loader", "cursor count albums: " + new Integer(cursor.getCount()).toString());
-            while (cursor.moveToNext()) {
-                //String AlbumName = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
-                //Log.e("Loader",cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)));
-                //String AlbumsID = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ID));
-
-
-
-               // builder.setMediaId(AlbumName);
-                //builder.setTitle(AlbumName);
-                //builder.setDescription(ALBUM_DESC);
-               // mItems.add(new MediaBrowserCompat.MediaItem(builder.build(), MediaBrowserCompat.MediaItem.FLAG_BROWSABLE));
-            }
-        }
-        cursor.close();
-
-        return mItems;
-    }
-
-    // TODO: 09.01.2017  deal with it later2;
-    private List<MediaBrowserCompat.MediaItem> getSongs(String AlbumID)
-    {
-
-        String selection = MediaStore.Audio.Media.IS_MUSIC + "!= 0" + " AND "
-                + MediaStore.Audio.Media.ALBUM_ID + " == " +AlbumID ;
-        String sortOrder = MediaStore.Audio.Media.TITLE + " ASC";
-        Cursor cursor = mContentResolver.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, selection, null, sortOrder);
-
-
-        List<MediaBrowserCompat.MediaItem> mItems = new ArrayList<>();
-
-        if (cursor != null && cursor.getCount() > 0) {
-            while (cursor.moveToNext()) {
-                String Artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
-                Log.e("Loader",cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)));
-                String Title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
-                Log.e("Loader",cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)));
-                String Data =  cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-                Log.e("Loader",cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)));
-
-                builder.setTitle(Artist);
-                builder.setSubtitle(Title);
-                builder.setMediaUri(Uri.parse(Data));
-                builder.setDescription(SONG_DESC);
-                mItems.add(new MediaBrowserCompat.MediaItem(builder.build(), MediaBrowserCompat.MediaItem.FLAG_PLAYABLE));
-            }
-        }
-        cursor.close();
-
-        return mItems;
-    }
 
 
     /** Get all songs sorted by title */
 
     public List<MediaBrowserCompat.MediaItem> getSongs()
     {
+
+        MediaDescriptionCompat.Builder  builder = new  MediaDescriptionCompat.Builder();
 
         String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
         String sortOrder = MediaStore.Audio.Media.TITLE + " ASC";
@@ -129,7 +69,6 @@ public class MediaItemLoader {
                 builder.setTitle(Artist.equals("<unknown>") ? "" : Artist);
                 builder.setSubtitle(Title.equals("<unknown>") ? "" : Title);
                 builder.setMediaUri(Uri.parse(Data));
-                builder.setDescription(SONG_DESC);
                 builder.setMediaId(new Integer(i).toString());
                 mItems.add(new MediaBrowserCompat.MediaItem(builder.build(), MediaBrowserCompat.MediaItem.FLAG_PLAYABLE));
                 i++;
@@ -137,20 +76,42 @@ public class MediaItemLoader {
         }
         cursor.close();
 
+        Log.i(TAG, "Loaded: " + String.valueOf(mItems.size()));
+
         return mItems;
     }
 
 
-
+    // TODO: 12.01.2017
     /** main function to get media items based on onLoadChildren's parentID */
-    public List<MediaBrowserCompat.MediaItem> getItems(final String parentMediaID)
-    {
-        /*if (parentMediaID.equals(ALBUMS_REQEST))
-            return getAlbums();
-        else
-            return  getSongs(parentMediaID);*/
-        return getSongs();
+    public List<MediaBrowserCompat.MediaItem> getItems(final String parentMediaID)    {
 
+        return getSongs();
+    }
+
+
+    public static Bundle putItemInBundle(final Bundle bundle, final MediaBrowserCompat.MediaItem item)
+    {
+        bundle.putString(TITLE_KEY, item.getDescription().getTitle().toString());
+        bundle.putString(SUBTITLE_KEY, item.getDescription().getSubtitle().toString());
+        bundle.putString(URI_KEY, item.getDescription().getMediaUri().toString());
+        bundle.putString(MEDIA_ID_KEY, item.getMediaId());
+
+        return bundle;
+    }
+
+    public static MediaBrowserCompat.MediaItem getItemFromBundle(final Bundle bundle)
+    {
+
+        MediaDescriptionCompat.Builder  builder = new  MediaDescriptionCompat.Builder();
+
+        builder.setTitle(bundle.getString(TITLE_KEY));
+
+        builder.setSubtitle(bundle.getString(SUBTITLE_KEY));
+        builder.setMediaId(bundle.getString(MEDIA_ID_KEY));
+        builder.setMediaUri(Uri.parse(bundle.getString(URI_KEY)));
+
+        return new MediaBrowserCompat.MediaItem(builder.build(), MediaBrowserCompat.MediaItem.FLAG_PLAYABLE);
     }
 
 
