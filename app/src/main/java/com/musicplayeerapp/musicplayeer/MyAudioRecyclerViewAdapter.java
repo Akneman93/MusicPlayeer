@@ -44,7 +44,7 @@ public class MyAudioRecyclerViewAdapter extends RecyclerView.Adapter<MyAudioRecy
             public void onClick(View v) {
                 if (null != mListener) {
 
-                    mListener.onClick(holder.mInfo);
+                    mListener.onItemClick(holder.mInfo);
                 }
             }
         });

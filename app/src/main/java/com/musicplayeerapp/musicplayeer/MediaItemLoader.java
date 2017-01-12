@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.v4.content.ContentResolverCompat;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.util.Log;
@@ -106,7 +105,6 @@ public class MediaItemLoader {
         MediaDescriptionCompat.Builder  builder = new  MediaDescriptionCompat.Builder();
 
         builder.setTitle(bundle.getString(TITLE_KEY));
-
         builder.setSubtitle(bundle.getString(SUBTITLE_KEY));
         builder.setMediaId(bundle.getString(MEDIA_ID_KEY));
         builder.setMediaUri(Uri.parse(bundle.getString(URI_KEY)));

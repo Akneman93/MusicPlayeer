@@ -2,13 +2,13 @@ package com.musicplayeerapp.musicplayeer;
 
 import android.content.ComponentName;
 import android.content.Context;
-import android.media.browse.MediaBrowser;
-import android.net.Uri;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.RemoteException;
-import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
@@ -18,12 +18,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class AudioPlayFragment extends Fragment {
@@ -31,13 +28,16 @@ public class AudioPlayFragment extends Fragment {
     private static final String TAG = "AudioPlayFragment";
     private MediaBrowserCompat mMediaBrowser;
     private MediaControllerCompat mMediaController;
-    private View mView;
+    private View mRootView;
+    private ImageView mPlayImageView;
     private SeekBar seekBar;
     private MediaBrowserCompat.MediaItem mItem = null;
     private int mItemprogress = 0;
     public final String INIT_URI_PLAY = "INIT_URI_PLAY";
     public final String INTERRUPTED_URI_KEY = "INTERRUPTED_URI_KEY";
     private final String PROGRESS_KEY = "PROGRESS_KEY";
+    private Drawable mPlayImage;
+    private Drawable mPauseImage;
 
 
 
@@ -47,14 +47,22 @@ public class AudioPlayFragment extends Fragment {
 
     public AudioPlayFragment() {
 
-
-
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        mPlayImage = ContextCompat.getDrawable(getActivity(), R.drawable.ic_media_play);
+        mPauseImage = ContextCompat.getDrawable(getActivity(), R.drawable.ic_media_pause);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+
+        Log.i(TAG, "onCreateView");
 
         Bundle bundle = getArguments();
 
@@ -74,25 +82,39 @@ public class AudioPlayFragment extends Fragment {
         }
 
 
+        mRootView = inflater.inflate(R.layout.audio_play, container, false);
 
-        mView = inflater.inflate(R.layout.audio_play, container, false);
-
-        seekBar = (SeekBar)mView.findViewById(R.id.seekBar);
+        seekBar = (SeekBar) mRootView.findViewById(R.id.seekBar);
 
         seekBar.setOnSeekBarChangeListener(seekBarChangeListener);
 
+        mPlayImageView = (ImageView)mRootView.findViewById(R.id.play);
+
+        mPlayImageView.setImageDrawable(mPlayImage);
 
         mMediaBrowser = new MediaBrowserCompat(getActivity(),
                 new ComponentName(getActivity(), PlayMusicService.class),
                 mConnectionCallbacks,
                 null);
 
+
+
         mMediaBrowser.connect();
         buildTransportControls();
 
-
-        return mView;
+        return mRootView;
     }
+
+
+
+
+
+
+
+
+
+
+
 
 
     @Override
@@ -149,7 +171,6 @@ public class AudioPlayFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
-        stopTracking();
     }
 
     @Override
@@ -159,7 +180,6 @@ public class AudioPlayFragment extends Fragment {
         mMediaBrowser.disconnect();
         mMediaController.unregisterCallback(controllerCallback);
 
-
     }
 
 
@@ -168,7 +188,7 @@ public class AudioPlayFragment extends Fragment {
 
     public void setAudio(MediaBrowserCompat.MediaItem item)
     {
-        TextView artist =  (TextView)mView.findViewById(R.id.Textview_description);
+        TextView artist =  (TextView) mRootView.findViewById(R.id.Textview_description);
         artist.setText(item.getDescription().getTitle() + " " + item.getDescription().getSubtitle());
         mItem = item;
 
@@ -214,8 +234,6 @@ public class AudioPlayFragment extends Fragment {
                 setAudio(mItem);
             }
 
-
-
             Log.i(TAG,"Connection succeded");
 
         }
@@ -229,8 +247,9 @@ public class AudioPlayFragment extends Fragment {
 
     public void buildTransportControls()
     {
-        final Button button = (Button)mView.findViewById(R.id.start_button);
-        button.setOnClickListener(new View.OnClickListener() {
+        //final Button button = (Button) mRootView.findViewById(R.id.start_button);
+
+        mPlayImageView.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
                 Log.i(TAG,"Button pressed");
@@ -273,7 +292,7 @@ public class AudioPlayFragment extends Fragment {
                 @Override
                 public void onPlaybackStateChanged(PlaybackStateCompat playbackstate)
                 {
-                    final Button button = (Button)mView.findViewById(R.id.start_button);
+                    //final Button button = (Button) mRootView.findViewById(R.id.start_button);
 
                     int state = playbackstate.getState();
 
@@ -281,18 +300,22 @@ public class AudioPlayFragment extends Fragment {
                     switch (state) {
 
                         case PlaybackStateCompat.STATE_PAUSED:
-                            button.setText("Play");
+                            mPlayImageView.setImageDrawable(mPlayImage);
+                            //button.setText("Play");
                             break;
 
                         case PlaybackStateCompat.STATE_PLAYING:
-                            button.setText("Pause");
+                            mPlayImageView.setImageDrawable(mPauseImage);
+                            //button.setText("Pause");
                             break;
 
                         case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT:
 
                             Log.i(TAG, "skip to next (onPlaybackStateChanged)");
                             stopTracking();
-                            button.setText("Play");
+                            mPlayImageView.setImageDrawable(mPlayImage);
+
+                            //button.setText("Play");
 
                             /* MediaId is expected to be the index of item in list
                             int id = Integer.parseInt(mItem.getMediaId());

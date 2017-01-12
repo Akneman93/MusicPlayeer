@@ -16,30 +16,29 @@
         android:id="@+id/Textview_description" />
 
 
-    <Button
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="start"
-        android:layout_marginTop="20dp"
-        android:id="@+id/start_button"
-        android:orientation="horizontal"/>
-
-    <SeekBar
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:id="@+id/seekBar" />
+        android:layout_height="match_parent"
+        tools:context="com.musicplayeerapp.musicplayeer.AudioPlayFragment"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_marginTop="20dp"
+            android:id="@+id/play"
+            android:orientation="horizontal"/>
 
 
+        <SeekBar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="26dp"
+            android:id="@+id/seekBar" />
 
 
-
-
-
-
-
-
-
+    </LinearLayout>
 
 
 </LinearLayout>

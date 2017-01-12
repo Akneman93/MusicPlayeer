@@ -3,12 +3,9 @@ package com.musicplayeerapp.musicplayeer;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.Bundle;
-import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.media.MediaBrowserCompat;
-import android.support.v4.media.session.MediaControllerCompat;
-import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -104,7 +101,7 @@ public class AudioListFragment extends Fragment {
 
     public interface OnListFragmentInteractionListener {
 
-        void onClick(MediaBrowserCompat.MediaItem audioInfo);
+        void onItemClick(MediaBrowserCompat.MediaItem audioInfo);
 
     }
 
@@ -114,16 +111,16 @@ public class AudioListFragment extends Fragment {
     OnListFragmentInteractionListener onClickListener = new OnListFragmentInteractionListener()
     {
         @Override
-        public void onClick(MediaBrowserCompat.MediaItem audioInfo) {
+        public void onItemClick(MediaBrowserCompat.MediaItem audioInfo) {
 
             if (audioInfo.isPlayable()) {
-                Log.i(TAG, "onClick:onClick");
-                mListener.onClick(audioInfo);
+                Log.i(TAG, "onItemClick:onItemClick");
+                mListener.onItemClick(audioInfo);
             }
 
             else
             if  (mMediaBrowser != null) {
-                Log.i(TAG, "onClick:subscribe");
+                Log.i(TAG, "onItemClick:subscribe");
                 mMediaBrowser.subscribe("notImportant", subscriptionCallback);
             }
             else

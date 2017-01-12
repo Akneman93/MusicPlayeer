@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onClick(MediaBrowserCompat.MediaItem audioInfo)
+    public void onItemClick(MediaBrowserCompat.MediaItem audioInfo)
     {
 
         if (audioInfo == null) return;
