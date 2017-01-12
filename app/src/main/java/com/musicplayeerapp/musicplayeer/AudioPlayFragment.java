@@ -56,7 +56,6 @@ public class AudioPlayFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-
         Bundle bundle = getArguments();
 
         if (bundle != null) {
@@ -292,6 +291,8 @@ public class AudioPlayFragment extends Fragment {
                         case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT:
 
                             Log.i(TAG, "skip to next (onPlaybackStateChanged)");
+                            stopTracking();
+                            button.setText("Play");
 
                             /* MediaId is expected to be the index of item in list
                             int id = Integer.parseInt(mItem.getMediaId());
@@ -302,7 +303,7 @@ public class AudioPlayFragment extends Fragment {
                             break;
 
                         default:
-                            button.setText("Play");
+                            //button.setText("Play");
                     }
 
                 }

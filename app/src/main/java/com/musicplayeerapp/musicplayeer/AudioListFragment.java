@@ -23,11 +23,12 @@ public class AudioListFragment extends Fragment {
 
 
     private static final String TAG = "AudioListFragment";
+
     MediaBrowserCompat mMediaBrowser;
 
 
     private OnListFragmentInteractionListener mListener;
-    private List<MediaBrowserCompat.MediaItem> mAudioList = new ArrayList<>();
+    private List<MediaBrowserCompat.MediaItem> mAudioList;
     private MyAudioRecyclerViewAdapter mRecyclerAdapter;
     private RecyclerView mRecyclerView;
 
@@ -52,16 +53,14 @@ public class AudioListFragment extends Fragment {
                 new ComponentName(getActivity(), PlayMusicService.class),
                 mConnectionCallbacks,
                 null);
-
         mMediaBrowser.connect();
-
-        mMediaBrowser.subscribe("notImportant", subscriptionCallback);
     }
 
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.i(TAG,"onDestroy");
         mMediaBrowser.disconnect();
     }
 
@@ -72,8 +71,12 @@ public class AudioListFragment extends Fragment {
         Log.i(TAG, "onCreateView");
         View rootView = inflater.inflate(R.layout.audio_list, container, false);
 
-
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerView);
+
+        //if we returned from backstack, then we have initialized mAudioList
+        if (mAudioList != null)
+            //reset mRecyclerView
+             mRecyclerView.setAdapter(new MyAudioRecyclerViewAdapter(mAudioList, onClickListener));
 
         return rootView;
     }
@@ -92,6 +95,7 @@ public class AudioListFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
+        Log.i(TAG,"onDetach");
         mListener = null;
         mAudioList = null;
         mRecyclerView = null;
@@ -152,9 +156,8 @@ public class AudioListFragment extends Fragment {
     private final MediaBrowserCompat.ConnectionCallback mConnectionCallbacks =  new MediaBrowserCompat.ConnectionCallback() {
         @Override
         public void onConnected() {
-
-
             Log.i(TAG,"Connection succeded");
+            mMediaBrowser.subscribe("notImportant", subscriptionCallback);
 
         }
 

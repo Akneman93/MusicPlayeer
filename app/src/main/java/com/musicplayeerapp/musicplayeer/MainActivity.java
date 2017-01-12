@@ -2,6 +2,7 @@ package com.musicplayeerapp.musicplayeer;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -16,6 +17,7 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = "MainActivity";
     private boolean mDualPane;
     private AudioPlayFragment playFrag;
+    AudioListFragment listFragment;
 
 
     @Override
@@ -24,9 +26,15 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         View playLayout = findViewById(R.id.playlayout);
+
         mDualPane = playLayout != null && playLayout.getVisibility() == View.VISIBLE;
-        //Log.i(TAG, "playLayout not null" + String.valueOf(playLayout != null));
-       // Log.i(TAG, "getVisibility() " + String.valueOf(playLayout.getVisibility() == View.VISIBLE));
+
+        if (!mDualPane) {
+            listFragment = new AudioListFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.listlayout, (Fragment)listFragment)
+                    .commit();
+        }
 
 
     }
@@ -65,9 +73,8 @@ public class MainActivity extends AppCompatActivity
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.listlayout, (Fragment)playFrag)
                     .addToBackStack(null)
+                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                     .commit();
-
-            Log.i(TAG,"not dualpane");
         }
 
 
