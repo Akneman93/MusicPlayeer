@@ -24,6 +24,14 @@ public class MyAudioRecyclerViewAdapter extends RecyclerView.Adapter<MyAudioRecy
         mAudioList = audiolist;
     }
 
+    public List<MediaBrowserCompat.MediaItem> getItemList()
+    {
+        return mAudioList;
+    }
+
+
+
+
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
@@ -49,6 +57,8 @@ public class MyAudioRecyclerViewAdapter extends RecyclerView.Adapter<MyAudioRecy
             }
         });
     }
+
+
 
 
 

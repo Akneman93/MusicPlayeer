@@ -36,13 +36,25 @@ public class AudioPlayFragment extends Fragment {
     public final String INIT_URI_PLAY = "INIT_URI_PLAY";
     public final String INTERRUPTED_URI_KEY = "INTERRUPTED_URI_KEY";
     private final String PROGRESS_KEY = "PROGRESS_KEY";
-    private Drawable mPlayImage;
-    private Drawable mPauseImage;
+
+    public final int play_image_id = R.drawable.ic_media_play;
+    public final int pause_image_id = R.drawable.ic_media_pause;
+    private int current_image_id = R.drawable.ic_media_play;
 
 
 
 
 
+    public void setPlayImageById(int id)
+    {
+        mPlayImageView.setImageDrawable(ContextCompat.getDrawable(getActivity(), id));
+        current_image_id = id;
+    }
+
+    public int getCurrentPlayImageId()
+    {
+        return current_image_id;
+    }
 
 
     public AudioPlayFragment() {
@@ -53,8 +65,6 @@ public class AudioPlayFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mPlayImage = ContextCompat.getDrawable(getActivity(), R.drawable.ic_media_play);
-        mPauseImage = ContextCompat.getDrawable(getActivity(), R.drawable.ic_media_pause);
     }
 
     @Override
@@ -90,7 +100,8 @@ public class AudioPlayFragment extends Fragment {
 
         mPlayImageView = (ImageView)mRootView.findViewById(R.id.play);
 
-        mPlayImageView.setImageDrawable(mPlayImage);
+        //mPlayImageView.setImageDrawable(mPlayImage);
+        setPlayImageById(play_image_id);
 
         mMediaBrowser = new MediaBrowserCompat(getActivity(),
                 new ComponentName(getActivity(), PlayMusicService.class),
@@ -300,12 +311,14 @@ public class AudioPlayFragment extends Fragment {
                     switch (state) {
 
                         case PlaybackStateCompat.STATE_PAUSED:
-                            mPlayImageView.setImageDrawable(mPlayImage);
+                            //mPlayImageView.setImageDrawable(mPlayImage);
+                            setPlayImageById(play_image_id);
                             //button.setText("Play");
                             break;
 
                         case PlaybackStateCompat.STATE_PLAYING:
-                            mPlayImageView.setImageDrawable(mPauseImage);
+                            //mPlayImageView.setImageDrawable(mPauseImage);
+                            setPlayImageById(pause_image_id);
                             //button.setText("Pause");
                             break;
 
@@ -313,7 +326,8 @@ public class AudioPlayFragment extends Fragment {
 
                             Log.i(TAG, "skip to next (onPlaybackStateChanged)");
                             stopTracking();
-                            mPlayImageView.setImageDrawable(mPlayImage);
+                            //mPlayImageView.setImageDrawable(mPlayImage);
+                            setPlayImageById(play_image_id);
 
                             //button.setText("Play");
 
@@ -383,6 +397,15 @@ public class AudioPlayFragment extends Fragment {
             mHandler.removeCallbacks(informAboutState);
             isTracked = false;
         }
+    }
+
+
+    public PlaybackStateCompat getSessionState()
+    {
+        if(mMediaController != null)
+            return mMediaController.getPlaybackState();
+        else
+            return null;
     }
 
 

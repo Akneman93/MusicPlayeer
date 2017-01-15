@@ -8,16 +8,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
-import java.util.List;
-
 public class MainActivity extends AppCompatActivity
         implements AudioListFragment.OnListFragmentInteractionListener
 {
 
     private static final String TAG = "MainActivity";
     private boolean mDualPane;
-    private AudioPlayFragment playFrag;
-    AudioListFragment listFragment;
+    public AudioPlayFragment playFrag;
+    public AudioListFragment listFrag;
+
 
 
     @Override
@@ -30,9 +29,9 @@ public class MainActivity extends AppCompatActivity
         mDualPane = playLayout != null && playLayout.getVisibility() == View.VISIBLE;
 
         if (!mDualPane) {
-            listFragment = new AudioListFragment();
+            listFrag = new AudioListFragment();
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.listlayout, (Fragment)listFragment)
+                    .replace(R.id.listlayout, (Fragment) listFrag)
                     .commit();
         }
 

@@ -15,6 +15,9 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
+
+
+// shows list of media items
 public class AudioListFragment extends Fragment {
 
 
@@ -24,6 +27,7 @@ public class AudioListFragment extends Fragment {
 
 
     private OnListFragmentInteractionListener mListener;
+    //
     private List<MediaBrowserCompat.MediaItem> mAudioList;
     private MyAudioRecyclerViewAdapter mRecyclerAdapter;
     private RecyclerView mRecyclerView;
@@ -102,10 +106,7 @@ public class AudioListFragment extends Fragment {
     public interface OnListFragmentInteractionListener {
 
         void onItemClick(MediaBrowserCompat.MediaItem audioInfo);
-
     }
-
-
 
 
     OnListFragmentInteractionListener onClickListener = new OnListFragmentInteractionListener()

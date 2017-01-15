@@ -1,4 +1,4 @@
-package com.vkplayeerapp.musicplayeer;
+package com.musicplayeerapp.musicplayeer;
 
 import org.junit.Test;
 
